@@ -72,7 +72,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
               child: Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).primaryColor.withOpacity(0.1),
+                  color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(Icons.edit_note_rounded, size: 60, color: Theme.of(context).primaryColor),
@@ -131,7 +131,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
               onPressed: _saveTask,
               style: ElevatedButton.styleFrom(
                 minimumSize: const Size(double.infinity, 60),
-                shadowColor: Theme.of(context).primaryColor.withOpacity(0.4),
+                shadowColor: Theme.of(context).primaryColor.withValues(alpha: 0.4),
                 elevation: 8,
               ),
               child: const Text('CREATE TASK', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, letterSpacing: 1.2)),

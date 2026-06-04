@@ -37,7 +37,7 @@ class HomeScreen extends StatelessWidget {
                         end: Alignment.bottomRight,
                         colors: [
                           Theme.of(context).primaryColor,
-                          Theme.of(context).primaryColor.withOpacity(0.8),
+                          Theme.of(context).primaryColor.withValues(alpha: 0.8),
                         ],
                       ),
                     ),
@@ -62,7 +62,7 @@ class HomeScreen extends StatelessWidget {
                                         errorBuilder: (context, error, stackTrace) => Container(
                                           padding: const EdgeInsets.all(8),
                                           decoration: BoxDecoration(
-                                            color: Colors.white.withOpacity(0.2),
+                                            color: Colors.white.withValues(alpha: 0.2),
                                             borderRadius: BorderRadius.circular(12),
                                           ),
                                           child: const Icon(Icons.task_alt, color: Colors.white, size: 24),
@@ -91,7 +91,7 @@ class HomeScreen extends StatelessWidget {
                             Text(
                               'Welcome back,',
                               style: TextStyle(
-                                color: Colors.white.withOpacity(0.8),
+                                color: Colors.white.withValues(alpha: 0.8),
                                 fontSize: 16,
                               ),
                             ),
@@ -109,7 +109,7 @@ class HomeScreen extends StatelessWidget {
                             Text(
                               'You have $pendingTasks tasks to complete today.',
                               style: TextStyle(
-                                color: Colors.white.withOpacity(0.9),
+                                color: Colors.white.withValues(alpha: 0.9),
                                 fontSize: 14,
                               ),
                             ),
@@ -226,7 +226,7 @@ class HomeScreen extends StatelessWidget {
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: Colors.grey.withOpacity(0.05),
+              color: Colors.grey.withValues(alpha: 0.05),
               spreadRadius: 2,
               blurRadius: 10,
               offset: const Offset(0, 4),
@@ -273,7 +273,7 @@ class HomeScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.orange.withOpacity(0.3),
+            color: Colors.orange.withValues(alpha: 0.3),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -332,7 +332,7 @@ class HomeScreen extends StatelessWidget {
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: Colors.grey.withOpacity(0.05),
+              color: Colors.grey.withValues(alpha: 0.05),
               spreadRadius: 1,
               blurRadius: 5,
               offset: const Offset(0, 2),
