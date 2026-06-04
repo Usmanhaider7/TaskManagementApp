@@ -4,6 +4,7 @@ import '../../services/database_service.dart';
 import '../../services/auth_service.dart';
 import '../../models/task_model.dart';
 import '../tasks/add_task_screen.dart';
+import '../auth/auth_gate.dart';
 
 class HomeScreen extends StatelessWidget {
   final User user;
@@ -83,7 +84,16 @@ class HomeScreen extends StatelessWidget {
                                 ),
                                 IconButton(
                                   icon: const Icon(Icons.logout_rounded, color: Colors.white),
-                                  onPressed: () => authService.logout(),
+                                  onPressed: () async {
+                                    await authService.logout();
+                                    if (context.mounted) {
+                                      Navigator.pushAndRemoveUntil(
+                                        context,
+                                        MaterialPageRoute(builder: (context) => const AuthGate()),
+                                        (route) => false,
+                                      );
+                                    }
+                                  },
                                 ),
                               ],
                             ),
