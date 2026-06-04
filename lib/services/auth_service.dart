@@ -5,28 +5,41 @@ class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   // Sign Up with Email & Password
-  Future<UserCredential?> signUp(String email, String password) async {
+  // Returns null on success, error message on failure
+  Future<String?> signUp(String email, String password, String firstName, String lastName) async {
     try {
-      return await _auth.createUserWithEmailAndPassword(
+      UserCredential credential = await _auth.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
-    } catch (e) {
-      debugPrint("Signup Error: $e");
+
+      // Update Profile immediately
+      await credential.user?.updateDisplayName("$firstName $lastName");
+      await credential.user?.reload(); // Ensure profile is refreshed
+      
+      // Sign out so they have to login properly to start session
+      await _auth.signOut();
       return null;
+    } on FirebaseAuthException catch (e) {
+      return e.message ?? "An error occurred during signup";
+    } catch (e) {
+      return e.toString();
     }
   }
 
   // Login
-  Future<UserCredential?> login(String email, String password) async {
+  // Returns null on success, error message on failure
+  Future<String?> login(String email, String password) async {
     try {
-      return await _auth.signInWithEmailAndPassword(
+      await _auth.signInWithEmailAndPassword(
         email: email,
         password: password,
       );
-    } catch (e) {
-      debugPrint("Login Error: $e");
       return null;
+    } on FirebaseAuthException catch (e) {
+      return e.message ?? "Login failed. Please check your credentials.";
+    } catch (e) {
+      return e.toString();
     }
   }
 
