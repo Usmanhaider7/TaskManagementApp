@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../../services/auth_service.dart';
+import '../home/home_screen.dart';
 import 'signup_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -32,7 +34,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
     setState(() => _isLoading = true);
 
-    final user = await _authService.login(
+    final errorMessage = await _authService.login(
       _emailController.text.trim(),
       _passwordController.text.trim(),
     );
@@ -41,11 +43,13 @@ class _LoginScreenState extends State<LoginScreen> {
 
     setState(() => _isLoading = false);
 
-    if (user == null) {
+    if (errorMessage != null) {
+      // Login Failed
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Login Failed. Please check your credentials.')),
+        SnackBar(content: Text(errorMessage)),
       );
     }
+    // Success: AuthGate will automatically switch to HomeScreen
   }
 
   @override

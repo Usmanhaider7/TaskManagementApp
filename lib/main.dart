@@ -21,13 +21,13 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF6366F1), // Modern Indigo
+          seedColor: const Color(0xFF6366F1),
           primary: const Color(0xFF6366F1),
-          secondary: const Color(0xFFF43F5E), // Rose/Pink for accents
+          secondary: const Color(0xFFF43F5E),
           surface: Colors.white,
         ),
         useMaterial3: true,
-        scaffoldBackgroundColor: const Color(0xFFF8FAFC), // Very light grey/blue
+        scaffoldBackgroundColor: const Color(0xFFF8FAFC),
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
             backgroundColor: const Color(0xFF6366F1),

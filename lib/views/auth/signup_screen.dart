@@ -26,36 +26,54 @@ class _SignupScreenState extends State<SignupScreen> {
   }
 
   void _signUp() async {
-    if (_emailController.text.trim().isEmpty || 
-        _passwordController.text.trim().isEmpty ||
-        _firstNameController.text.trim().isEmpty ||
-        _lastNameController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please fill all fields')),
-      );
+    final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
+    final fName = _firstNameController.text.trim();
+    final lName = _lastNameController.text.trim();
+
+    if (email.isEmpty || password.isEmpty || fName.isEmpty || lName.isEmpty) {
+      _showSnackBar('Please fill all fields');
       return;
     }
 
     setState(() => _isLoading = true);
 
-    final user = await _authService.signUp(
-      _emailController.text.trim(),
-      _passwordController.text.trim(),
-      _firstNameController.text.trim(),
-      _lastNameController.text.trim(),
-    );
+    final errorMessage = await _authService.signUp(email, password, fName, lName);
 
     if (!mounted) return;
-
     setState(() => _isLoading = false);
 
-    if (user != null) {
-      Navigator.pop(context); 
+    if (errorMessage == null) {
+      // Success
+      _showSuccessDialog();
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Signup Failed. Try again.')),
-      );
+      // Failure
+      _showSnackBar(errorMessage);
     }
+  }
+
+  void _showSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  void _showSuccessDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        title: const Text('Account Created!'),
+        content: const Text('Your account has been created successfully. Please login to continue.'),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context); // Close dialog
+              Navigator.pop(context); // Go back to login screen
+            },
+            child: const Text('LOGIN NOW'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
