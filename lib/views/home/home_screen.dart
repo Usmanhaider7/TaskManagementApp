@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../../services/database_service.dart';
+import '../../providers/task_provider.dart';
 import '../../services/auth_service.dart';
 import '../../models/task_model.dart';
 import '../tasks/add_task_screen.dart';
@@ -12,209 +13,204 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final DatabaseService dbService = DatabaseService();
     final AuthService authService = AuthService();
+    final taskProvider = context.watch<TaskProvider>();
+
+    final tasks = taskProvider.tasks;
+    final completedTasks = tasks.where((t) => t.isCompleted).length;
+    final pendingTasks = tasks.length - completedTasks;
 
     return Scaffold(
-      body: StreamBuilder<List<TaskModel>>(
-        stream: dbService.streamTasks,
-        builder: (context, snapshot) {
-          final tasks = snapshot.data ?? [];
-          final completedTasks = tasks.where((t) => t.isCompleted).length;
-          final pendingTasks = tasks.length - completedTasks;
-
-          return CustomScrollView(
-            slivers: [
-              SliverAppBar(
-                expandedHeight: 200.0,
-                floating: false,
-                pinned: true,
-                backgroundColor: Theme.of(context).primaryColor,
-                flexibleSpace: FlexibleSpaceBar(
-                  background: Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          Theme.of(context).primaryColor,
-                          Theme.of(context).primaryColor.withValues(alpha: 0.8),
-                        ],
-                      ),
-                    ),
-                    child: SafeArea(
-                      child: Padding(
-                        padding: const EdgeInsets.all(20.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+      body: CustomScrollView(
+        slivers: [
+          SliverAppBar(
+            expandedHeight: 200.0,
+            floating: false,
+            pinned: true,
+            backgroundColor: Theme.of(context).primaryColor,
+            flexibleSpace: FlexibleSpaceBar(
+              background: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      Theme.of(context).primaryColor,
+                      Theme.of(context).primaryColor.withValues(alpha: 0.8),
+                    ],
+                  ),
+                ),
+                child: SafeArea(
+                  child: Padding(
+                    padding: const EdgeInsets.all(20.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Row(
-                                  children: [
-                                    ClipRRect(
-                                      borderRadius: BorderRadius.circular(12),
-                                      child: Image.asset(
-                                        'assets/logo.png',
-                                        height: 40,
-                                        width: 40,
-                                        fit: BoxFit.cover,
-                                        errorBuilder: (context, error, stackTrace) => Container(
-                                          padding: const EdgeInsets.all(8),
-                                          decoration: BoxDecoration(
-                                            color: Colors.white.withValues(alpha: 0.2),
-                                            borderRadius: BorderRadius.circular(12),
-                                          ),
-                                          child: const Icon(Icons.task_alt, color: Colors.white, size: 24),
-                                        ),
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: Image.asset(
+                                    'assets/logo.png',
+                                    height: 40,
+                                    width: 40,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) => Container(
+                                      padding: const EdgeInsets.all(8),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white.withValues(alpha: 0.2),
+                                        borderRadius: BorderRadius.circular(12),
                                       ),
+                                      child: const Icon(Icons.task_alt, color: Colors.white, size: 24),
                                     ),
-                                    const SizedBox(width: 12),
-                                    const Text(
-                                      'Taskify',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 22,
-                                        fontWeight: FontWeight.bold,
-                                        letterSpacing: 1,
-                                      ),
-                                    ),
-                                  ],
+                                  ),
                                 ),
-                                IconButton(
-                                  icon: const Icon(Icons.logout_rounded, color: Colors.white),
-                                  onPressed: () async {
-                                    await authService.logout();
-                                    if (context.mounted) {
-                                      Navigator.pushAndRemoveUntil(
-                                        context,
-                                        MaterialPageRoute(builder: (context) => const AuthGate()),
-                                        (route) => false,
-                                      );
-                                    }
-                                  },
+                                const SizedBox(width: 12),
+                                const Text(
+                                  'Taskify',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 1,
+                                  ),
                                 ),
                               ],
                             ),
-                            const Spacer(),
-                            Text(
-                              'Welcome back,',
-                              style: TextStyle(
-                                color: Colors.white.withValues(alpha: 0.8),
-                                fontSize: 16,
-                              ),
-                            ),
-                            Text(
-                              (user.displayName != null && user.displayName!.isNotEmpty)
-                                  ? user.displayName!
-                                  : user.email?.split('@')[0] ?? "User",
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 32,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'You have $pendingTasks tasks to complete today.',
-                              style: TextStyle(
-                                color: Colors.white.withValues(alpha: 0.9),
-                                fontSize: 14,
-                              ),
+                            IconButton(
+                              icon: const Icon(Icons.logout_rounded, color: Colors.white),
+                              onPressed: () async {
+                                await authService.logout();
+                                if (context.mounted) {
+                                  Navigator.pushAndRemoveUntil(
+                                    context,
+                                    MaterialPageRoute(builder: (context) => const AuthGate()),
+                                    (route) => false,
+                                  );
+                                }
+                              },
                             ),
                           ],
                         ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.all(20.0),
-                  child: Row(
-                    children: [
-                      _buildStatCard(
-                        context,
-                        'Total',
-                        tasks.length.toString(),
-                        Icons.assignment_outlined,
-                        Colors.blue,
-                      ),
-                      const SizedBox(width: 15),
-                      _buildStatCard(
-                        context,
-                        'Done',
-                        completedTasks.toString(),
-                        Icons.check_circle_outline,
-                        Colors.green,
-                      ),
-                      const SizedBox(width: 15),
-                      _buildStatCard(
-                        context,
-                        'Pending',
-                        pendingTasks.toString(),
-                        Icons.pending_actions_outlined,
-                        Colors.orange,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              SliverToBoxAdapter(
-                child: _buildQuoteCard(context),
-              ),
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        'Recent Tasks',
-                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                      ),
-                      TextButton(
-                        onPressed: () {},
-                        child: const Text('View All'),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              if (snapshot.connectionState == ConnectionState.waiting)
-                const SliverFillRemaining(child: Center(child: CircularProgressIndicator()))
-              else if (tasks.isEmpty)
-                SliverFillRemaining(
-                  child: Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.auto_awesome, size: 60, color: Colors.grey.shade300),
-                        const SizedBox(height: 16),
-                        Text('No tasks yet. Start being productive!', style: TextStyle(color: Colors.grey.shade500)),
+                        const Spacer(),
+                        Text(
+                          'Welcome back,',
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.8),
+                            fontSize: 16,
+                          ),
+                        ),
+                        Text(
+                          (user.displayName != null && user.displayName!.isNotEmpty)
+                              ? user.displayName!
+                              : user.email?.split('@')[0] ?? "User",
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 32,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'You have $pendingTasks tasks to complete today.',
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.9),
+                            fontSize: 14,
+                          ),
+                        ),
                       ],
                     ),
                   ),
-                )
-              else
-                SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                      final task = tasks[index];
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
-                        child: _buildTaskCard(context, dbService, task),
-                      );
-                    },
-                    childCount: tasks.length,
-                  ),
                 ),
-              const SliverToBoxAdapter(child: SizedBox(height: 100)),
-            ],
-          );
-        },
+              ),
+            ),
+          ),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Row(
+                children: [
+                  _buildStatCard(
+                    context,
+                    'Total',
+                    tasks.length.toString(),
+                    Icons.assignment_outlined,
+                    Colors.blue,
+                  ),
+                  const SizedBox(width: 15),
+                  _buildStatCard(
+                    context,
+                    'Done',
+                    completedTasks.toString(),
+                    Icons.check_circle_outline,
+                    Colors.green,
+                  ),
+                  const SizedBox(width: 15),
+                  _buildStatCard(
+                    context,
+                    'Pending',
+                    pendingTasks.toString(),
+                    Icons.pending_actions_outlined,
+                    Colors.orange,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          SliverToBoxAdapter(
+            child: _buildQuoteCard(context),
+          ),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Recent Tasks',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                  TextButton(
+                    onPressed: () {},
+                    child: const Text('View All'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          if (taskProvider.isLoading)
+            const SliverFillRemaining(child: Center(child: CircularProgressIndicator()))
+          else if (tasks.isEmpty)
+            SliverFillRemaining(
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.auto_awesome, size: 60, color: Colors.grey.shade300),
+                    const SizedBox(height: 16),
+                    Text('No tasks yet. Start being productive!', style: TextStyle(color: Colors.grey.shade500)),
+                  ],
+                ),
+              ),
+            )
+          else
+            SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) {
+                  final task = tasks[index];
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
+                    child: _buildTaskCard(context, taskProvider, task),
+                  );
+                },
+                childCount: tasks.length,
+              ),
+            ),
+          const SliverToBoxAdapter(child: SizedBox(height: 100)),
+        ],
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
@@ -322,7 +318,7 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildTaskCard(BuildContext context, DatabaseService dbService, TaskModel task) {
+  Widget _buildTaskCard(BuildContext context, TaskProvider taskProvider, TaskModel task) {
     return Dismissible(
       key: Key(task.id),
       direction: DismissDirection.endToStart,
@@ -335,7 +331,7 @@ class HomeScreen extends StatelessWidget {
         ),
         child: Icon(Icons.delete_outline, color: Colors.red.shade700),
       ),
-      onDismissed: (_) => dbService.deleteTask(task.id),
+      onDismissed: (_) => taskProvider.deleteTask(task.id),
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
@@ -352,7 +348,7 @@ class HomeScreen extends StatelessWidget {
         child: ListTile(
           contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
           leading: InkWell(
-            onTap: () => dbService.toggleTaskStatus(task.id, task.isCompleted),
+            onTap: () => taskProvider.toggleTaskStatus(task.id, task.isCompleted),
             child: Container(
               padding: const EdgeInsets.all(2),
               decoration: BoxDecoration(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../../services/database_service.dart';
+import 'package:provider/provider.dart';
+import '../../providers/task_provider.dart';
 
 class AddTaskScreen extends StatefulWidget {
   const AddTaskScreen({super.key});
@@ -12,7 +13,6 @@ class AddTaskScreen extends StatefulWidget {
 class _AddTaskScreenState extends State<AddTaskScreen> {
   final _titleController = TextEditingController();
   final _descController = TextEditingController();
-  final DatabaseService _dbService = DatabaseService();
   DateTime _selectedDate = DateTime.now().add(const Duration(days: 1));
 
   @override
@@ -44,7 +44,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
       return;
     }
 
-    await _dbService.addTask(
+    await context.read<TaskProvider>().addTask(
       _titleController.text.trim(),
       _descController.text.trim(),
       _selectedDate,
