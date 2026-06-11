@@ -81,30 +81,27 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                   ),
                 );
               },
-              child: Hero(
-                tag: 'app_logo',
-                child: Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.1),
-                        blurRadius: 20,
-                        spreadRadius: 5,
-                      )
-                    ],
-                  ),
-                  child: Image.asset(
-                    'assets/logo.png',
-                    height: 100,
-                    width: 100,
-                    errorBuilder: (context, error, stackTrace) => const Icon(
-                      Icons.task_alt,
-                      size: 80,
-                      color: Color(0xFF6366F1),
-                    ),
+              child: Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.1),
+                      blurRadius: 20,
+                      spreadRadius: 5,
+                    )
+                  ],
+                ),
+                child: Image.asset(
+                  'assets/logo.png',
+                  height: 100,
+                  width: 100,
+                  errorBuilder: (context, error, stackTrace) => const Icon(
+                    Icons.task_alt,
+                    size: 80,
+                    color: Color(0xFF6366F1),
                   ),
                 ),
               ),

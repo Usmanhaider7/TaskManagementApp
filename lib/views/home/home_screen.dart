@@ -53,21 +53,18 @@ class HomeScreen extends StatelessWidget {
                               children: [
                                 ClipRRect(
                                   borderRadius: BorderRadius.circular(12),
-                                  child: Hero(
-                                    tag: 'app_logo',
-                                    child: Image.asset(
-                                      'assets/logo.png',
-                                      height: 40,
-                                      width: 40,
-                                      fit: BoxFit.cover,
-                                      errorBuilder: (context, error, stackTrace) => Container(
-                                        padding: const EdgeInsets.all(8),
-                                        decoration: BoxDecoration(
-                                          color: Colors.white.withValues(alpha: 0.2),
-                                          borderRadius: BorderRadius.circular(12),
-                                        ),
-                                        child: const Icon(Icons.task_alt, color: Colors.white, size: 24),
+                                  child: Image.asset(
+                                    'assets/logo.png',
+                                    height: 40,
+                                    width: 40,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) => Container(
+                                      padding: const EdgeInsets.all(8),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white.withValues(alpha: 0.2),
+                                        borderRadius: BorderRadius.circular(12),
                                       ),
+                                      child: const Icon(Icons.task_alt, color: Colors.white, size: 24),
                                     ),
                                   ),
                                 ),
@@ -136,32 +133,35 @@ class HomeScreen extends StatelessWidget {
               padding: const EdgeInsets.all(20.0),
               child: Row(
                 children: [
-                  StatCard(
-                    title: 'Total',
-                    value: allTasks.length.toString(),
-                    icon: Icons.assignment_outlined,
-                    color: Colors.blue,
+                  _buildStatCard(
+                    context,
+                    'Total',
+                    allTasks.length.toString(),
+                    Icons.assignment_outlined,
+                    Colors.blue,
                   ),
                   const SizedBox(width: 15),
-                  StatCard(
-                    title: 'Done',
-                    value: completedCount.toString(),
-                    icon: Icons.check_circle_outline,
-                    color: Colors.green,
+                  _buildStatCard(
+                    context,
+                    'Done',
+                    completedCount.toString(),
+                    Icons.check_circle_outline,
+                    Colors.green,
                   ),
                   const SizedBox(width: 15),
-                  StatCard(
-                    title: 'Pending',
-                    value: pendingTasksList.length.toString(),
-                    icon: Icons.pending_actions_outlined,
-                    color: Colors.orange,
+                  _buildStatCard(
+                    context,
+                    'Pending',
+                    pendingTasksList.length.toString(),
+                    Icons.pending_actions_outlined,
+                    Colors.orange,
                   ),
                 ],
               ),
             ),
           ),
-          const SliverToBoxAdapter(
-            child: QuoteCard(),
+          SliverToBoxAdapter(
+            child: _buildQuoteCard(context),
           ),
           SliverToBoxAdapter(
             child: Padding(
@@ -183,73 +183,47 @@ class HomeScreen extends StatelessWidget {
           ),
           if (taskProvider.isLoading)
             const SliverFillRemaining(child: Center(child: CircularProgressIndicator()))
-          else
+          else if (pendingTasksList.isEmpty)
             SliverFillRemaining(
-              hasScrollBody: pendingTasksList.isNotEmpty,
-              child: AnimatedSwitcher(
-                duration: const Duration(milliseconds: 500),
-                transitionBuilder: (Widget child, Animation<double> animation) {
-                  return FadeTransition(opacity: animation, child: child);
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.auto_awesome, size: 60, color: Colors.grey.shade300),
+                    const SizedBox(height: 16),
+                    Text('No pending tasks! Enjoy your day.', style: TextStyle(color: Colors.grey.shade500)),
+                  ],
+                ),
+              ),
+            )
+          else
+            SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) {
+                  final task = pendingTasksList[index];
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
+                    child: _buildTaskCard(context, taskProvider, task),
+                  );
                 },
-                child: pendingTasksList.isEmpty
-                    ? Center(
-                        key: const ValueKey('empty_state'),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.auto_awesome, size: 60, color: Colors.grey.shade300),
-                            const SizedBox(height: 16),
-                            Text('No pending tasks! Enjoy your day.', style: TextStyle(color: Colors.grey.shade500)),
-                          ],
-                        ),
-                      )
-                    : ListView.builder(
-                        key: const ValueKey('task_list'),
-                        padding: const EdgeInsets.fromLTRB(20, 8, 20, 100),
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemCount: pendingTasksList.length,
-                        itemBuilder: (context, index) {
-                          final task = pendingTasksList[index];
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 8.0),
-                            child: TaskCard(task: task),
-                          );
-                        },
-                      ),
+                childCount: pendingTasksList.length,
               ),
             ),
+          const SliverToBoxAdapter(child: SizedBox(height: 100)),
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
-        heroTag: 'add_task_fab',
         onPressed: () {
           Navigator.push(context, MaterialPageRoute(builder: (context) => const AddTaskScreen()));
         },
-        icon: const Hero(tag: 'add_task_icon', child: Icon(Icons.add_task)),
+        icon: const Icon(Icons.add_task),
         label: const Text('New Task'),
         elevation: 4,
       ),
     );
   }
-}
 
-class StatCard extends StatelessWidget {
-  final String title;
-  final String value;
-  final IconData icon;
-  final Color color;
-
-  const StatCard({
-    super.key,
-    required this.title,
-    required this.value,
-    required this.icon,
-    required this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildStatCard(BuildContext context, String title, String value, IconData icon, Color color) {
     return Expanded(
       child: Container(
         padding: const EdgeInsets.all(15),
@@ -276,13 +250,8 @@ class StatCard extends StatelessWidget {
       ),
     );
   }
-}
 
-class QuoteCard extends StatelessWidget {
-  const QuoteCard({super.key});
-
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildQuoteCard(BuildContext context) {
     final List<String> quotes = [
       "Believe you can and you're halfway there.",
       "The only way to do great work is to love what you do.",
@@ -348,89 +317,68 @@ class QuoteCard extends StatelessWidget {
       ),
     );
   }
-}
 
-class TaskCard extends StatefulWidget {
-  final TaskModel task;
-  const TaskCard({super.key, required this.task});
-
-  @override
-  State<TaskCard> createState() => _TaskCardState();
-}
-
-class _TaskCardState extends State<TaskCard> {
-  bool _isHovered = false;
-
-  @override
-  Widget build(BuildContext context) {
-    final taskProvider = context.read<TaskProvider>();
-    
-    return MouseRegion(
-      onEnter: (_) => setState(() => _isHovered = true),
-      onExit: (_) => setState(() => _isHovered = false),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        transform: Matrix4.diagonal3Values(_isHovered ? 1.02 : 1.0, _isHovered ? 1.02 : 1.0, 1.0),
+  Widget _buildTaskCard(BuildContext context, TaskProvider taskProvider, TaskModel task) {
+    return Dismissible(
+      key: Key(task.id),
+      direction: DismissDirection.endToStart,
+      background: Container(
+        alignment: Alignment.centerRight,
+        padding: const EdgeInsets.only(right: 20),
+        decoration: BoxDecoration(
+          color: Colors.red.shade100,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Icon(Icons.delete_outline, color: Colors.red.shade700),
+      ),
+      onDismissed: (_) => taskProvider.deleteTask(task.id),
+      child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: Colors.grey.withValues(alpha: _isHovered ? 0.1 : 0.05),
+              color: Colors.grey.withValues(alpha: 0.05),
               spreadRadius: 1,
               blurRadius: 5,
               offset: const Offset(0, 2),
             ),
           ],
         ),
-        child: Dismissible(
-          key: Key(widget.task.id),
-          direction: DismissDirection.endToStart,
-          background: Container(
-            alignment: Alignment.centerRight,
-            padding: const EdgeInsets.only(right: 20),
-            decoration: BoxDecoration(
-              color: Colors.red.shade100,
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Icon(Icons.delete_outline, color: Colors.red.shade700),
-          ),
-          onDismissed: (_) => taskProvider.deleteTask(widget.task.id),
-          child: ListTile(
-            contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-            leading: InkWell(
-              onTap: () => taskProvider.toggleTaskStatus(widget.task.id, widget.task.isCompleted),
-              child: Container(
-                padding: const EdgeInsets.all(2),
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: widget.task.isCompleted ? Colors.green : Colors.grey.shade300,
-                    width: 2,
-                  ),
-                ),
-                child: Icon(
-                  widget.task.isCompleted ? Icons.check : null,
-                  size: 20,
-                  color: Colors.green,
+        child: ListTile(
+          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+          leading: InkWell(
+            onTap: () => taskProvider.toggleTaskStatus(task.id, task.isCompleted),
+            child: Container(
+              padding: const EdgeInsets.all(2),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: task.isCompleted ? Colors.green : Colors.grey.shade300,
+                  width: 2,
                 ),
               ),
-            ),
-            title: Text(
-              widget.task.title,
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                decoration: widget.task.isCompleted ? TextDecoration.lineThrough : null,
-                color: widget.task.isCompleted ? Colors.grey : Colors.black87,
+              child: Icon(
+                task.isCompleted ? Icons.check : null,
+                size: 20,
+                color: Colors.green,
               ),
             ),
-            subtitle: Text(
-              widget.task.description,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-            trailing: const Icon(Icons.chevron_right, color: Colors.grey),
           ),
+          title: Text(
+            task.title,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              decoration: task.isCompleted ? TextDecoration.lineThrough : null,
+              color: task.isCompleted ? Colors.grey : Colors.black87,
+            ),
+          ),
+          subtitle: Text(
+            task.description,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          trailing: const Icon(Icons.chevron_right, color: Colors.grey),
         ),
       ),
     );
