@@ -10,15 +10,39 @@ class AddTaskScreen extends StatefulWidget {
   State<AddTaskScreen> createState() => _AddTaskScreenState();
 }
 
-class _AddTaskScreenState extends State<AddTaskScreen> {
+class _AddTaskScreenState extends State<AddTaskScreen> with SingleTickerProviderStateMixin {
   final _titleController = TextEditingController();
   final _descController = TextEditingController();
   DateTime _selectedDate = DateTime.now().add(const Duration(days: 1));
+  
+  late AnimationController _animationController;
+  late Animation<double> _fadeAnimation;
+  late Animation<Offset> _slideAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    );
+
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeIn),
+    );
+
+    _slideAnimation = Tween<Offset>(begin: const Offset(0, 0.1), end: Offset.zero).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeOutBack),
+    );
+
+    _animationController.forward();
+  }
 
   @override
   void dispose() {
     _titleController.dispose();
     _descController.dispose();
+    _animationController.dispose();
     super.dispose();
   }
 
@@ -63,80 +87,89 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
         backgroundColor: Colors.transparent,
         foregroundColor: Colors.black87,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(Icons.edit_note_rounded, size: 60, color: Theme.of(context).primaryColor),
-              ),
-            ),
-            const SizedBox(height: 32),
-            const Text("Task Details", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _titleController,
-              decoration: const InputDecoration(
-                labelText: 'Title',
-                hintText: 'What needs to be done?',
-                prefixIcon: Icon(Icons.title_rounded),
-              ),
-            ),
-            const SizedBox(height: 20),
-            TextField(
-              controller: _descController,
-              decoration: const InputDecoration(
-                labelText: 'Description',
-                hintText: 'Add more details (optional)',
-                prefixIcon: Icon(Icons.notes_rounded),
-              ),
-              maxLines: 3,
-            ),
-            const SizedBox(height: 24),
-            const Text("Due Date", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 12),
-            InkWell(
-              onTap: _pickDate,
-              borderRadius: BorderRadius.circular(16),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Colors.grey.shade200),
-                ),
-                child: Row(
-                  children: [
-                    Icon(Icons.calendar_month_rounded, color: Theme.of(context).primaryColor),
-                    const SizedBox(width: 12),
-                    Text(
-                      DateFormat('EEEE, MMM d, yyyy').format(_selectedDate),
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+      body: FadeTransition(
+        opacity: _fadeAnimation,
+        child: SlideTransition(
+          position: _slideAnimation,
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Hero(
+                    tag: 'add_task_icon',
+                    child: Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(Icons.edit_note_rounded, size: 60, color: Theme.of(context).primaryColor),
                     ),
-                    const Spacer(),
-                    const Icon(Icons.arrow_drop_down_rounded, color: Colors.grey),
-                  ],
+                  ),
                 ),
-              ),
+                const SizedBox(height: 32),
+                const Text("Task Details", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: _titleController,
+                  decoration: const InputDecoration(
+                    labelText: 'Title',
+                    hintText: 'What needs to be done?',
+                    prefixIcon: Icon(Icons.title_rounded),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                TextField(
+                  controller: _descController,
+                  decoration: const InputDecoration(
+                    labelText: 'Description',
+                    hintText: 'Add more details (optional)',
+                    prefixIcon: Icon(Icons.notes_rounded),
+                  ),
+                  maxLines: 3,
+                ),
+                const SizedBox(height: 24),
+                const Text("Due Date", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 12),
+                InkWell(
+                  onTap: _pickDate,
+                  borderRadius: BorderRadius.circular(16),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: Colors.grey.shade200),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.calendar_month_rounded, color: Theme.of(context).primaryColor),
+                        const SizedBox(width: 12),
+                        Text(
+                          DateFormat('EEEE, MMM d, yyyy').format(_selectedDate),
+                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                        ),
+                        const Spacer(),
+                        const Icon(Icons.arrow_drop_down_rounded, color: Colors.grey),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 48),
+                ElevatedButton(
+                  onPressed: _saveTask,
+                  style: ElevatedButton.styleFrom(
+                    minimumSize: const Size(double.infinity, 60),
+                    shadowColor: Theme.of(context).primaryColor.withValues(alpha: 0.4),
+                    elevation: 8,
+                  ),
+                  child: const Text('CREATE TASK', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
+                ),
+              ],
             ),
-            const SizedBox(height: 48),
-            ElevatedButton(
-              onPressed: _saveTask,
-              style: ElevatedButton.styleFrom(
-                minimumSize: const Size(double.infinity, 60),
-                shadowColor: Theme.of(context).primaryColor.withValues(alpha: 0.4),
-                elevation: 8,
-              ),
-              child: const Text('CREATE TASK', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
-            ),
-          ],
+          ),
         ),
       ),
     );
