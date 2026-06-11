@@ -16,9 +16,9 @@ class HomeScreen extends StatelessWidget {
     final AuthService authService = AuthService();
     final taskProvider = context.watch<TaskProvider>();
 
-    final tasks = taskProvider.tasks;
-    final completedTasks = tasks.where((t) => t.isCompleted).length;
-    final pendingTasks = tasks.length - completedTasks;
+    final allTasks = taskProvider.tasks;
+    final pendingTasksList = allTasks.where((t) => !t.isCompleted).toList();
+    final completedCount = allTasks.length - pendingTasksList.length;
 
     return Scaffold(
       body: CustomScrollView(
@@ -115,7 +115,7 @@ class HomeScreen extends StatelessWidget {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          'You have $pendingTasks tasks to complete today.',
+                          'You have ${pendingTasksList.length} tasks to complete today.',
                           style: TextStyle(
                             color: Colors.white.withValues(alpha: 0.9),
                             fontSize: 14,
@@ -136,7 +136,7 @@ class HomeScreen extends StatelessWidget {
                   _buildStatCard(
                     context,
                     'Total',
-                    tasks.length.toString(),
+                    allTasks.length.toString(),
                     Icons.assignment_outlined,
                     Colors.blue,
                   ),
@@ -144,7 +144,7 @@ class HomeScreen extends StatelessWidget {
                   _buildStatCard(
                     context,
                     'Done',
-                    completedTasks.toString(),
+                    completedCount.toString(),
                     Icons.check_circle_outline,
                     Colors.green,
                   ),
@@ -152,7 +152,7 @@ class HomeScreen extends StatelessWidget {
                   _buildStatCard(
                     context,
                     'Pending',
-                    pendingTasks.toString(),
+                    pendingTasksList.length.toString(),
                     Icons.pending_actions_outlined,
                     Colors.orange,
                   ),
@@ -183,7 +183,7 @@ class HomeScreen extends StatelessWidget {
           ),
           if (taskProvider.isLoading)
             const SliverFillRemaining(child: Center(child: CircularProgressIndicator()))
-          else if (tasks.isEmpty)
+          else if (pendingTasksList.isEmpty)
             SliverFillRemaining(
               child: Center(
                 child: Column(
@@ -191,7 +191,7 @@ class HomeScreen extends StatelessWidget {
                   children: [
                     Icon(Icons.auto_awesome, size: 60, color: Colors.grey.shade300),
                     const SizedBox(height: 16),
-                    Text('No tasks yet. Start being productive!', style: TextStyle(color: Colors.grey.shade500)),
+                    Text('No pending tasks! Enjoy your day.', style: TextStyle(color: Colors.grey.shade500)),
                   ],
                 ),
               ),
@@ -200,13 +200,13 @@ class HomeScreen extends StatelessWidget {
             SliverList(
               delegate: SliverChildBuilderDelegate(
                 (context, index) {
-                  final task = tasks[index];
+                  final task = pendingTasksList[index];
                   return Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
                     child: _buildTaskCard(context, taskProvider, task),
                   );
                 },
-                childCount: tasks.length,
+                childCount: pendingTasksList.length,
               ),
             ),
           const SliverToBoxAdapter(child: SizedBox(height: 100)),
